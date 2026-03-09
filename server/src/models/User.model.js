@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
-            lowerCase: true,
+            lowercase: true,
             trim: true
         },
         passwordHash: {
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
         }
     },
     {
-        timestamp: true
+        timestamps: true
     }
 );
 
