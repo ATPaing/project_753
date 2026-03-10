@@ -3,6 +3,7 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 
 import authRoutes from "./routes/auth.route.js";
+import gameRoutes from "./routes/game.route.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -20,8 +21,11 @@ app.get("/health", (req, res) => {
 });
 
 
-// routes
+// auth routes
 app.use("/auth", authRoutes);
+
+// game routes
+app.use("/games", gameRoutes);
 
 // connect to database and start server
 connectDB().then(() => {
