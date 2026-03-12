@@ -1,4 +1,6 @@
 import Game from "../models/Game.model.js";
+import User from "../models/User.model.js";
+import Invitation from "../models/Invitation.model.js";
 
 export const createGame = async (req, res) => {
     try {
@@ -11,6 +13,7 @@ export const createGame = async (req, res) => {
             feeType,
             feeAmount,
             maxPlayers,
+            inviteEmails,
         } = req.body;
 
         if (
@@ -53,9 +56,33 @@ export const createGame = async (req, res) => {
             maxPlayers,
         });
 
+        let invitations = [];
+
+        if (inviteEmails && inviteEmails.length > 0) {
+            const uniqueEmails = [...new Set(inviteEmails)];
+
+            const users = await User.find({
+                email: { $in: uniqueEmails },
+            });
+
+            const invitationDocs = users
+                .filter((user) => user._id.toString() !== req.userId)
+                .map((user) => ({
+                    game: game._id,
+                    sender: req.userId,
+                    recipient: user._id,
+                }));
+
+            if (invitationDocs.length > 0) {
+                invitations = await Invitation.insertMany(invitationDocs);
+            }
+        }
+
+
         res.status(201).json({
             message: "Game created successfully",
             game,
+            invitations,
         });
     } catch (error) {
         console.error("Error creating game:", error);
@@ -81,8 +108,8 @@ export const getGames = async (req, res) => {
 
         const games = await Game.find(query)
             .populate("host", "name")
-            .sort({ startTime: 1 }); 
-        
+            .sort({ startTime: 1 });
+
         res.status(200).json(games);
     } catch (error) {
         console.error("Error fetching games:", error);
