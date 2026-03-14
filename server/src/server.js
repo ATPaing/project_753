@@ -29,7 +29,8 @@ app.use("/auth", authRoutes);
 app.use("/games", gameRoutes);
 
 // invitation routes
-app.use("/game", inviteRoutes);
+app.use("/invitations", inviteRoutes);
+
 
 // connect to database and start server
 connectDB().then(() => {
