@@ -88,3 +88,25 @@ export const respondInvitation = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }   
 };
+
+export const getMyInvitations = async (req, res) => {
+    try {
+        const { status } = req.query;
+
+        const filter = { recipient: req.userId };
+
+        if (status) {
+            filter.status = status;
+        }
+
+        const invitations = await Invitation.find(filter)
+            .populate("game", "title startTime endTime")
+            .populate("sender", "name email")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(invitations);
+    } catch (error) {
+        console.error("Error fetching invitations:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
