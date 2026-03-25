@@ -5,28 +5,33 @@ const invitationSchema = new mongoose.Schema(
         game: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Game",
-            required: true
+            required: true,
         },
         sender: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true
+            required: true,
         },
         recipient: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true
+            required: true,
         },
         status: {
             type: String,
             enum: ["pending", "accepted", "declined"],
-            default: "pending"
+            default: "pending",
+        },
+        attendanceStatus: {
+            type: String,
+            enum: ["unmarked", "present", "no_show"],
+            default: "unmarked",
         },
         respondedAt: {
             type: Date,
             required: function () {
                 return this.status !== "pending";
-            }
+            },
         },
     },
     {

@@ -22,7 +22,7 @@ const gameSchema = new mongoose.Schema(
                     return this.startTime < value;
                 },
                 message: "endTime must be later than startTime",
-            }
+            },
         },
         minReliabilityScore: {
             type: Number,
