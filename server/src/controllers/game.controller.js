@@ -180,6 +180,77 @@ export const getMyGames = async (req, res) => {
     }
 };
 
+export const getMyNextGame = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const now = new Date();
+
+        // get hostedgame
+        const nextHostedGame = await Game.findOne({
+            host: userId,
+            startTime: { $gte: now },
+            status: "scheduled",
+        })
+            .sort({ startTime: 1 })
+            .populate("host", "name email");
+
+        // get invited games
+        const invitations = await Invitation.find({
+            recipient: userId,
+            status: "accepted",
+        }).populate({
+            path: "game",
+            select: "title location startTime endTime status host feeType feeAmount maxPlayers createdAt",
+            populate: {
+                path: "host",
+                select: "name email",
+            },
+        });
+
+        const nextInvitedInvitation =
+            invitations
+                .filter(
+                    (invitation) =>
+                        invitation.game &&
+                        invitation.game.status === "scheduled" &&
+                        new Date(invitation.game.startTime) >= now,
+                )
+                .sort(
+                    (a, b) =>
+                        new Date(a.game.startTime) - new Date(b.game.startTime),
+                )[0] || null;
+
+        const nextInvitedGame = nextInvitedInvitation
+            ?   {
+                    ...nextInvitedInvitation.game.toObject(),
+                    respondedAt: nextInvitedInvitation.respondedAt,
+                    invitationId: nextInvitedInvitation._id,
+                    invitationStatus: nextInvitedInvitation.status,
+                }
+            : null;
+
+        let nextGame = null;
+
+        if (nextHostedGame && nextInvitedGame) {
+            nextGame =
+                new Date(nextHostedGame.startTime) <
+                new Date(nextInvitedGame.startTime)
+                    ? nextHostedGame
+                    : nextInvitedGame;
+        } else if (nextHostedGame) {
+            nextGame = nextHostedGame;
+        } else if (nextInvitedGame) {
+            nextGame = nextInvitedGame;
+        }
+        return res.status(200).json(nextGame);
+    } catch (error) {
+        return res.status(500).json({
+            message: "Failed to get next game",
+            error: error.message,
+        });
+    }
+};
+
 export const editGame = async (req, res) => {
     try {
         const { gameId } = req.params;

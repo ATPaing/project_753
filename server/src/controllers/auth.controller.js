@@ -96,7 +96,7 @@ export const login = async (req, res) => {
 
 export const getMe = async (req, res) => {
     try {
-        console.log(req.userId)
+
         const user = await User.findById(req.userId).select("-passwordHash");
 
         if (!user) {
